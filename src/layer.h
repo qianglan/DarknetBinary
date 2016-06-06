@@ -131,6 +131,11 @@ struct layer{
     struct layer *input_layer;
     struct layer *self_layer;
     struct layer *output_layer;
+    
+    //added by qianglan
+    int quantize;
+    signed char *quantiBits;
+    float delta1;
 
     #ifdef GPU
     int *indexes_gpu;

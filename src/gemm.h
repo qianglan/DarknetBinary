@@ -5,6 +5,11 @@ void gemm_bin(int M, int N, int K, float ALPHA,
         char  *A, int lda, 
         float *B, int ldb,
         float *C, int ldc);
+
+void gemm_int(int M, int N, int K, float ALPHA, 
+        signed char  *A, int lda, 
+        float *B, int ldb,
+        float *C, int ldc,float delta);
         
 void gemm(int TA, int TB, int M, int N, int K, float ALPHA, 
                     float *A, int lda, 

@@ -27,6 +27,22 @@ void gemm_bin(int M, int N, int K, float ALPHA,
     }
 }
 
+void gemm_int(int M, int N, int K, float ALPHA, 
+        signed char  *A, int lda, 
+        float *B, int ldb,
+        float *C, int ldc, float delta)
+{
+    int i,j,k;
+    for(i = 0; i < M; ++i){
+        for(k = 0; k < K; ++k){
+            register float A_PART = ALPHA*A[i*lda+k]*delta;
+            for(j = 0; j < N; ++j){
+                C[i*ldc+j] += A_PART*B[k*ldb+j];
+            }
+        }
+    }
+}
+
 float *random_matrix(int rows, int cols)
 {
     int i;

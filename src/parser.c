@@ -157,8 +157,12 @@ convolutional_layer parse_convolutional(list *options, size_params params)
     if(!(h && w && c)) error("Layer before convolutional layer must output image.");
     int batch_normalize = option_find_int_quiet(options, "batch_normalize", 0);
     int binary = option_find_int_quiet(options, "binary", 0);
+    
+    //added by qianglan
+    int quantize = option_find_int_quiet(options, "quantization",0);
 
-    convolutional_layer layer = make_convolutional_layer(batch,h,w,c,n,size,stride,pad,activation, batch_normalize, binary);
+    //convolutional_layer layer = make_convolutional_layer(batch,h,w,c,n,size,stride,pad,activation, batch_normalize, binary);
+    convolutional_layer layer = make_convolutional_layer(batch,h,w,c,n,size,stride,pad,activation, batch_normalize, binary,quantize);
     layer.flipped = option_find_int_quiet(options, "flipped", 0);
     layer.dot = option_find_float_quiet(options, "dot", 0);
 

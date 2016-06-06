@@ -512,3 +512,8 @@ float **one_hot_encode(float *a, int n, int k)
     return t;
 }
 
+
+void Flmax(float *a,float *aq,float &delta,int quantize)
+{
+    
+}

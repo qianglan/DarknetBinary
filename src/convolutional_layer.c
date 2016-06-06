@@ -145,7 +145,7 @@ void normalize_delta_cpu(float *x, float *mean, float *variance, float *mean_del
     }
 }
 
-convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int n, int size, int stride, int pad, ACTIVATION activation, int batch_normalize, int binary)
+convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int n, int size, int stride, int pad, ACTIVATION activation, int batch_normalize, int binary, int quantize)
 {
     int i;
     convolutional_layer l = {0};
@@ -161,6 +161,9 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.size = size;
     l.pad = pad;
     l.batch_normalize = batch_normalize;
+    
+    //added by qianglan
+    l.quantize = quantize;
 
     l.filters = calloc(c*n*size*size, sizeof(float));
     l.filter_updates = calloc(c*n*size*size, sizeof(float));
@@ -380,20 +383,45 @@ void forward_convolutional_layer(convolutional_layer l, network_state state)
         return;
     }
 
-    int m = l.n;
-    int k = l.size*l.size*l.c;
-    int n = out_h*out_w;
+    else if(l.quantize){
+        int m = l.n;
+	int k = l.size*l.size*l.c;
+	int n = out_h*out_w;
 
-    float *a = l.filters;
-    float *b = l.col_image;
-    float *c = l.output;
-
-    for(i = 0; i < l.batch; ++i){
-        im2col_cpu(state.input, l.c, l.h, l.w, 
+	float *a = l.filters;
+	float *b = l.col_image;
+	float *c = l.output;
+	
+	int quantize = l.quantize;
+	float delta = l.delta1;
+	signed char *aq;
+	aq = calloc(...);	
+        Flmax(a,aq,&delta,quantize);
+	for(i = 0; i < l.batch; ++i){
+	    im2col_cpu(state.input, l.c, l.h, l.w, 
                 l.size, l.stride, l.pad, b);
-        gemm(0,0,m,n,k,1,a,k,b,n,1,c,n);
-        c += n*m;
-        state.input += l.c*l.h*l.w;
+	    gemm_int(0,0,m,n,k,1,aq,k,b,n,1,c,n,delta);
+	    c += n*m;
+	    state.input += l.c*l.h*l.w;
+	}
+    }
+    
+    else {
+	int m = l.n;
+	int k = l.size*l.size*l.c;
+	int n = out_h*out_w;
+
+	float *a = l.filters;
+	float *b = l.col_image;
+	float *c = l.output;
+
+	for(i = 0; i < l.batch; ++i){
+	    im2col_cpu(state.input, l.c, l.h, l.w, 
+                l.size, l.stride, l.pad, b);
+	    gemm(0,0,m,n,k,1,a,k,b,n,1,c,n);
+	    c += n*m;
+	    state.input += l.c*l.h*l.w;
+	}
     }
 
     if(l.batch_normalize){
