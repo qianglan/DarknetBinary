@@ -134,8 +134,11 @@ struct layer{
     
     //added by qianglan
     int quantize;
-    signed char *quantiBits;
+    signed char *aq;
     float delta1;
+    int iterMax;
+    int minv;
+    int maxv;
 
     #ifdef GPU
     int *indexes_gpu;

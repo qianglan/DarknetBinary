@@ -16,8 +16,8 @@ void train_yolo(char *cfgfile, char *weightfile)
 {
     //char *train_images = "/data/voc/train.txt";
     //char *backup_directory = "/home/pjreddie/backup/";
-    char *train_images = "/home/lanqiang/ResearchWork/OpenSourceCode/darknet/data/VOC/2007_train.txt";
-    char *backup_directory = "/home/lanqiang/ResearchWork/OpenSourceCode/darknet/backup";
+    char *train_images = "/home/lanqiang/ResearchWork/OpenSourceCode/DarkNetBinary/data/VOC/2007_train.txt";
+    char *backup_directory = "/home/lanqiang/ResearchWork/OpenSourceCode/DarkNetBinary/backup";
     srand(time(0));
     data_seed = time(0);
     char *base = basecfg(cfgfile);
@@ -408,7 +408,7 @@ void run_yolo(int argc, char **argv)
         voc_labels[i] = load_image_color(buff, 0, 0);
     }
 
-    float thresh = find_float_arg(argc, argv, "-thresh", .2);
+    float thresh = find_float_arg(argc, argv, "-thresh", 0.1);
     int cam_index = find_int_arg(argc, argv, "-c", 0);
     if(argc < 4){
         fprintf(stderr, "usage: %s %s [train/test/valid] [cfg] [weights (optional)]\n", argv[0], argv[1]);

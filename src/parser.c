@@ -159,10 +159,13 @@ convolutional_layer parse_convolutional(list *options, size_params params)
     int binary = option_find_int_quiet(options, "binary", 0);
     
     //added by qianglan
-    int quantize = option_find_int_quiet(options, "quantization",0);
+    int quantize = option_find_int(options, "quantize",1);
+    int iterMax = option_find_int(options, "iterMax",1);
+    int minv = option_find_int(options, "minv",1);
+    int maxv = option_find_int(options, "maxv",1);
 
     //convolutional_layer layer = make_convolutional_layer(batch,h,w,c,n,size,stride,pad,activation, batch_normalize, binary);
-    convolutional_layer layer = make_convolutional_layer(batch,h,w,c,n,size,stride,pad,activation, batch_normalize, binary,quantize);
+    convolutional_layer layer = make_convolutional_layer(batch,h,w,c,n,size,stride,pad,activation, batch_normalize, binary,quantize,iterMax,minv,maxv);
     layer.flipped = option_find_int_quiet(options, "flipped", 0);
     layer.dot = option_find_float_quiet(options, "dot", 0);
 

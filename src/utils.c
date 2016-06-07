@@ -513,7 +513,57 @@ float **one_hot_encode(float *a, int n, int k)
 }
 
 
-void Flmax(float *a,float *aq,float &delta,int quantize)
+void Flmax(float *a,signed char *z,float *delta,int size,int quantize, int iterMax, int minv, int maxv)
 {
+    int n_bits=quantize;
+    int q_levels=pow(2,n_bits);
+    *delta = (float)(maxv-minv)/q_levels;
     
+    //signed char *z = calloc(size*sizeof(signed char));
+    int i;
+    for(i=0;i<size;i++) {
+        float absa = (a[i]<0)?-a[i]:a[i];
+        float deltav = *delta;
+	float res = absa/deltav+0.5;
+	int temp = floor(res);
+	signed char sign =0;
+	if(a[i]>0)
+	  sign = 1;
+	else if(a[i]<0)
+	  sign = -1;
+	else
+	  sign = 0;
+	z[i] = sign*((temp<(q_levels-1)/2)?temp:(q_levels-1)/2);
+    }
+    float xz = 0.0;
+    float zz = 0;
+    int j,k;
+    float error=0.0;
+    for( j=0;j<iterMax;j++){
+        xz = 0.0;
+	zz = 0.0;
+	for( k=0;k<size;k++) {
+	    xz += a[k]*z[k];
+	    zz += z[k]*z[k];
+	}
+	*delta = xz/zz;
+	for( i=0;i<size;i++) {
+	    float absa = (a[i]<0)?-a[i]:a[i];
+	    float deltav = *delta;
+	    float res = absa/deltav+0.5;
+	    int temp = floor(res);
+	    signed char sign =0;
+	    if(a[i]>0)
+	      sign = 1;
+	    else if(a[i]<0)
+	      sign = -1;
+	    else
+	      sign = 0;
+	    z[i] = sign*((temp<(q_levels-1)/2)?temp:(q_levels-1)/2);
+	}
+    }
+    float deltav = *delta;
+    for(i=0;i<size;i++)
+	error+=(z[i]*deltav-a[i])*(z[i]*deltav-a[i]);
+    printf("weights error is %g\n",error);
 }

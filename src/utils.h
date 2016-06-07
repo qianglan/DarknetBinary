@@ -48,7 +48,7 @@ float find_float_arg(int argc, char **argv, char *arg, float def);
 int find_arg(int argc, char* argv[], char *arg);
 char *find_char_arg(int argc, char **argv, char *arg, char *def);
 
-void Flmax(float *a,float *aq,float &delta,int quantize);
+void Flmax(float *a,signed char *z,float *delta1,int size,int quantize, int iterMax, int minv, int maxv);
 
 #endif
 

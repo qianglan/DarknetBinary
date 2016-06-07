@@ -145,7 +145,7 @@ void normalize_delta_cpu(float *x, float *mean, float *variance, float *mean_del
     }
 }
 
-convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int n, int size, int stride, int pad, ACTIVATION activation, int batch_normalize, int binary, int quantize)
+convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int n, int size, int stride, int pad, ACTIVATION activation, int batch_normalize, int binary, int quantize,int iterMax,int minv,int maxv)
 {
     int i;
     convolutional_layer l = {0};
@@ -164,6 +164,11 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     
     //added by qianglan
     l.quantize = quantize;
+    l.iterMax = iterMax;
+    l.minv = minv;
+    l.maxv = maxv;
+    if(l.quantize)
+	l.aq = calloc(c*n*size*size,sizeof(signed char));
 
     l.filters = calloc(c*n*size*size, sizeof(float));
     l.filter_updates = calloc(c*n*size*size, sizeof(float));
@@ -259,7 +264,7 @@ void denormalize_convolutional_layer(convolutional_layer l)
 
 void test_convolutional_layer()
 {
-    convolutional_layer l = make_convolutional_layer(1, 5, 5, 3, 2, 5, 2, 1, LEAKY, 1, 0);
+    convolutional_layer l = make_convolutional_layer(1, 5, 5, 3, 2, 5, 2, 1, LEAKY, 1, 0,0,0,0,0);
     l.batch_normalize = 1;
     float data[] = {1,1,1,1,1,
         1,1,1,1,1,
@@ -360,11 +365,12 @@ void forward_convolutional_layer(convolutional_layer l, network_state state)
         swap_binary(&l);
     }
     */
-
+    int m = l.n;
+    int k = l.size*l.size*l.c;
+    int n = out_h*out_w;
+    
     if(l.binary){
-        int m = l.n;
-        int k = l.size*l.size*l.c;
-        int n = out_h*out_w;
+        
 
         char  *a = l.cfilters;
         float *b = l.col_image;
@@ -383,10 +389,10 @@ void forward_convolutional_layer(convolutional_layer l, network_state state)
         return;
     }
 
+    
+
     else if(l.quantize){
-        int m = l.n;
-	int k = l.size*l.size*l.c;
-	int n = out_h*out_w;
+        
 
 	float *a = l.filters;
 	float *b = l.col_image;
@@ -394,22 +400,25 @@ void forward_convolutional_layer(convolutional_layer l, network_state state)
 	
 	int quantize = l.quantize;
 	float delta = l.delta1;
-	signed char *aq;
-	aq = calloc(...);	
-        Flmax(a,aq,&delta,quantize);
+	signed char *aq = l.aq;
+	int size = m*k;
+	int iterMax = l.iterMax;
+	int minv = l.minv;
+	int maxv = l.maxv;
+	//aq = calloc(k*sizeof(signed char));	
+        Flmax(a, aq, &delta, size, quantize, iterMax, minv, maxv);
+	l.delta1 = delta;
 	for(i = 0; i < l.batch; ++i){
 	    im2col_cpu(state.input, l.c, l.h, l.w, 
                 l.size, l.stride, l.pad, b);
-	    gemm_int(0,0,m,n,k,1,aq,k,b,n,1,c,n,delta);
+	    gemm_int(m,n,k,1,aq,k,b,n,c,n,delta);
 	    c += n*m;
 	    state.input += l.c*l.h*l.w;
 	}
     }
     
     else {
-	int m = l.n;
-	int k = l.size*l.size*l.c;
-	int n = out_h*out_w;
+	
 
 	float *a = l.filters;
 	float *b = l.col_image;

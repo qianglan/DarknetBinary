@@ -1,6 +1,6 @@
 GPU=0
 OPENCV=0
-DEBUG=0
+DEBUG=1
 
 ARCH= --gpu-architecture=compute_35 --gpu-code=compute_35
 
